@@ -33,16 +33,26 @@ busqueda = st.text_input("Introduce parte de la dirección (columna C):")
 if busqueda:
     coincidencias = df_total[df_total["Dirección"].str.contains(busqueda, case=False, na=False)]
     
+if busqueda:
+    coincidencias = df_total[df_total["Dirección"].str.contains(busqueda, case=False, na=False)]
+
     if not coincidencias.empty:
-        seleccion = st.selectbox("Selecciona la dirección exacta:", coincidencias["Dirección"].unique())
-        df_filtrado = coincidencias[coincidencias["Dirección"] == seleccion]
+        opciones = coincidencias["Dirección"].dropna().unique().tolist()
+        seleccion = st.selectbox("Selecciona la dirección exacta:", opciones, key="direccion_select")
 
-        # Mostrar la última visita (según fecha más reciente)
-        ultima_visita = df_filtrado.sort_values("Marca temporal", ascending=False).head(1).T
-        ultima_visita.columns = ["Última visita"]
+        if seleccion:
+            df_filtrado = coincidencias[coincidencias["Dirección"] == seleccion].copy()
+            if not df_filtrado.empty:
+                ultima_visita = df_filtrado.sort_values("Marca temporal", ascending=False).head(1).T
+                ultima_visita.columns = ["Última visita"]
 
-        st.success(f"Mostrando información de la última visita para: **{seleccion}**")
-        st.dataframe(ultima_visita)
+                st.success(f"Mostrando información de la última visita para: **{seleccion}**")
+                st.dataframe(ultima_visita, use_container_width=True)
+    else:
+        st.warning("No se han encontrado coincidencias con esa dirección.")
+else:
+    st.info("Escribe parte de una dirección para comenzar la búsqueda.")
+
 
     else:
         st.warning("No se han encontrado coincidencias con esa dirección.")
